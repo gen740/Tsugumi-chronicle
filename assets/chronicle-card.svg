@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 240" width="1280" height="240" role="img" aria-labelledby="t">
+  <title id="t">Tsugumi Chronicle を読む: gen740.github.io/Tsugumi-chronicle</title>
+  <defs>
+    <clipPath id="frame"><rect width="1280" height="240" rx="24"/></clipPath>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.4" fill="#333"/></pattern>
+  </defs>
+  <g clip-path="url(#frame)" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', sans-serif">
+    <rect width="1280" height="240" fill="#1e1e1e"/>
+    <rect width="1280" height="240" fill="url(#dots)"/>
+
+    <!-- wires: from the left edge into the Card, and out to the way in -->
+    <path d="M0 132 C 70 132, 90 120, 156 120" fill="none" stroke="#e0913f" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M1004 120 C 1040 120, 1050 120, 1080 120" fill="none" stroke="#e0913f" stroke-width="3.5" stroke-linecap="round"/>
+
+    <!-- the Card -->
+    <rect x="156" y="28" width="848" height="184" rx="14" fill="#242424" stroke="#4a4a4a" stroke-width="1.5"/>
+    <path d="M170 28 H990 A14 14 0 0 1 1004 42 V72 H156 V42 A14 14 0 0 1 170 28 Z" fill="#2b2b2b"/>
+    <line x1="156" y1="72" x2="1004" y2="72" stroke="#3b3b3b" stroke-width="1.5"/>
+    <circle cx="184" cy="50" r="6" fill="#4fbf6b"/>
+    <text x="200" y="56" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="17" font-weight="600" fill="#b8b8b8" letter-spacing="1.5">CHRONICLE · DOCUMENT</text>
+    <text x="978" y="56" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16" fill="#8f8f8f">11/2 → 11/8</text>
+
+    <text x="188" y="126" font-size="44" font-weight="700" fill="#e5e5e5">Tsugumi の作られ方を読む</text>
+    <text x="190" y="164" font-size="21" fill="#b8b8b8">開発の流れを Card と配線で、デモ映像の制作を密着取材で</text>
+    <text x="190" y="196" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" fill="#5eafff">gen740.github.io/Tsugumi-chronicle</text>
+
+    <!-- ports -->
+    <circle cx="156" cy="120" r="9" fill="#1e1e1e" stroke="#168cff" stroke-width="3"/>
+    <circle cx="1004" cy="120" r="9" fill="#168cff" stroke="#1e1e1e" stroke-width="3"/>
+
+    <!-- the way in -->
+    <rect x="1080" y="78" width="140" height="84" rx="42" fill="#e0913f"/>
+    <path d="M1118 120 H1180 M1158 98 L1182 120 L1158 142" fill="none" stroke="#1b1d1f" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

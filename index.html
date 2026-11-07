@@ -1,0 +1,510 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tsugumi Chronicle</title>
+<style>
+/* Visual language taken from the Tsugumi macOS workflow window: dotted canvas, Card nodes, orange wires, run timeline. */
+:root{color-scheme:dark;--bg:#1e1e1e;--panel:#242424;--panel2:#2b2b2b;--bar:#272727;--line:#3b3b3b;--line2:#4a4a4a;--ink:#e5e5e5;--sub:#b8b8b8;--muted:#8f8f8f;--green:#4fbf6b;--green-d:#2f6d40;--blue:#168cff;--link:#5eafff;--orange:#e0913f;--amber:#d9b44a;--violet:#b48ad0;--mono:"SF Mono",ui-monospace,Menlo,monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#151515;color:var(--ink);font:15px/1.75 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px}::selection{background:#195c99;color:#fff}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+img{max-width:100%;display:block}
+.dots{background-color:var(--bg);background-image:radial-gradient(#3d3d3d .8px,transparent .8px);background-size:16px 16px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+.mono{font-family:var(--mono)}
+
+/* window chrome */
+.titlebar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;height:46px;padding:0 16px;background:#232323f2;backdrop-filter:blur(10px);border-bottom:1px solid #000}
+.lights{display:flex;gap:8px}.lights i{width:12px;height:12px;border-radius:50%;background:#ff5f57}.lights i:nth-child(2){background:#febc2e}.lights i:nth-child(3){background:#28c840}
+.titlebar b{font-size:14px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tabs{display:flex;gap:2px;margin-left:12px;overflow:auto;scrollbar-width:none}.tabs a{color:var(--sub);text-decoration:none;font-size:12px;padding:4px 10px;border-radius:6px;white-space:nowrap}.tabs a:hover{background:#333;color:#fff}
+.countdown{margin-left:auto;font-size:12px;color:var(--sub);background:#2d2d2d;border:1px solid var(--line2);border-radius:20px;padding:2px 11px;white-space:nowrap}.countdown b{color:var(--orange);font-family:var(--mono)}
+
+/* hero */
+.hero{border-bottom:1px solid #000;position:relative;overflow:hidden}
+.hero .wrap{padding-top:64px;padding-bottom:40px;position:relative}
+.eyebrow{font:600 11px var(--mono);letter-spacing:.16em;color:#7db4e8;text-transform:uppercase}
+.hero h1{font-size:clamp(42px,7.4vw,92px);line-height:1.04;letter-spacing:-.04em;margin:18px 0 22px;font-weight:750}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,#f0a24c,#e06b3a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero h1 span{color:#9a9a9a;font-weight:600}
+.lead{max-width:700px;font-size:17px;color:#cfcfcf;margin:0}
+.lead strong{color:#fff}
+.runbar{display:inline-flex;align-items:center;gap:14px;flex-wrap:wrap;margin:30px 0 8px;background:#2a2a2a;border:1px solid var(--line2);border-radius:12px;padding:7px 14px 7px 7px;font-size:13px;color:var(--sub);box-shadow:0 8px 30px #0006}
+.runbtn{display:inline-flex;align-items:center;gap:7px;background:var(--blue);color:#fff;border:0;border-radius:8px;padding:6px 14px;font:600 13px inherit;cursor:pointer;text-decoration:none}.runbtn:hover{background:#2b98ff}
+.ok{color:var(--green)}.warn{color:var(--orange)}
+.hero-art{margin:34px 0 0;border-radius:18px;border:1px solid #344;box-shadow:0 30px 80px #000a;width:100%}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:34px}
+.stat{background:var(--panel);padding:18px 18px 16px}.stat b{display:block;font:650 34px/1.1 var(--mono);letter-spacing:-.03em}.stat span{font-size:12px;color:var(--muted)}.stat i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.fine{font-size:12px;color:var(--muted)}
+
+/* sections */
+section.block{padding:84px 0 20px}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:26px}
+.sec-head h2{font-size:clamp(28px,4vw,42px);line-height:1.2;letter-spacing:-.03em;margin:8px 0 0}
+.sec-head p{max-width:560px;color:var(--sub);margin:0;font-size:14px}
+
+/* panel = app sub-window */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 14px 40px #0005}
+.panel-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--bar);border-bottom:1px solid var(--line);padding:9px 14px;font-size:13px}
+.panel-head b{font-weight:650}.panel-head .pill{background:#333;border:1px solid var(--line2);border-radius:7px;padding:1px 10px;font-size:12px;color:#ddd}
+.panel-head .right{margin-left:auto;font-size:12px;color:var(--muted)}
+
+/* product gallery */
+.gallery{display:grid;grid-template-columns:1fr 250px}
+.shot{position:relative;background:#111}.shot img{width:100%;aspect-ratio:16/10;object-fit:cover}
+.shot figcaption{padding:14px 18px;font-size:13px;color:var(--sub);border-top:1px solid var(--line)}.shot figcaption b{color:#fff;display:block;font-size:15px}
+.thumbs{border-left:1px solid var(--line);display:flex;flex-direction:column}
+.thumbs button{all:unset;cursor:pointer;display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--sub)}
+.thumbs button img{width:84px;border-radius:5px;border:1px solid var(--line2)}
+.thumbs button[aria-pressed=true]{background:#0b5fb8;color:#fff}.thumbs button:hover:not([aria-pressed=true]){background:#2f2f2f}
+.thumbs .what{padding:14px;font-size:12px;color:var(--muted);line-height:1.7}
+
+/* run timeline */
+.tl-scroll{overflow-x:auto}
+.tl{min-width:860px;padding:10px 16px 16px;position:relative}
+.tl-row{display:grid;grid-template-columns:118px 1fr;align-items:center;min-height:30px}
+.tl-label{font-size:12px;color:#cfcfcf;white-space:nowrap;display:flex;align-items:center;gap:7px}.tl-label i{width:8px;height:8px;border-radius:2px}
+.tl-track{position:relative;height:24px;background:#2c2c2c;border-radius:3px}
+.tl-track.tall{height:40px}
+.tl-axis .tl-track{background:none;height:22px}
+.tl-axis span{position:absolute;transform:translateX(-50%);font:10px var(--mono);color:var(--muted);white-space:nowrap}
+.tl-axis span.day{color:#fff;font-weight:600}
+.night{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,#ffffff07 0 4px,transparent 4px 8px);pointer-events:none}
+.gridline{position:absolute;top:0;bottom:0;border-left:1px solid #ffffff10;pointer-events:none}.gridline.day{border-left:1px dashed #ffffff40}
+.cell{position:absolute;bottom:0;border-radius:2px 2px 0 0;background:var(--green);cursor:pointer;border:0;padding:0}
+.cell:hover,.tick:hover{outline:1px solid #fff}
+.tick{position:absolute;top:3px;bottom:3px;width:3px;margin-left:-1px;border-radius:1px;cursor:pointer;border:0;padding:0}
+.tick.steer{background:var(--orange)}.tick.review{background:var(--amber);width:7px;margin-left:-3px;top:0;bottom:0}.tick.commit{background:var(--blue)}
+.chap{position:absolute;top:2px;transform:translateX(-50%);width:22px;height:22px;border-radius:50%;background:#1b1b1b;border:1.5px solid var(--orange);color:#fff;font:600 9.5px/19px var(--mono);text-align:center;cursor:pointer;padding:0}
+.chap:hover{background:var(--orange);color:#000}.chap.alt{border-color:var(--link)}.tl-track.chaps{height:48px;background:none}
+.tl-foot{display:flex;flex-wrap:wrap;gap:8px 22px;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);padding:12px 16px;border-top:1px solid var(--line);background:#222}
+.bookends{display:flex;gap:10px;flex-wrap:wrap}.bookends span{background:#2c2c2c;border:1px solid var(--line2);border-radius:6px;padding:2px 9px}
+#tip{position:fixed;z-index:50;pointer-events:none;max-width:320px;background:#2f2f2fF8;border:1px solid #555;border-radius:9px;padding:9px 12px;font-size:12px;line-height:1.6;box-shadow:0 10px 30px #000a;display:none}
+#tip b{display:block;color:#fff;font-size:12px;margin-bottom:3px}#tip small{color:var(--muted);display:block}
+
+/* story canvas */
+.canvas{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.canvas .panel-head{position:relative;z-index:2}
+.flow{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:70px 46px;padding:44px 34px 50px;align-items:start}
+.flow-wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:0}
+.node{position:relative;z-index:1;background:#262626;border:1px solid var(--green-d);border-radius:12px;box-shadow:0 6px 18px #0006;scroll-margin-top:90px;transition:border-color .2s,box-shadow .2s}
+.node:hover,.node.flash{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue),0 10px 30px #0008}
+.node[data-verdict=open]{border-color:#6b5532}.node[data-verdict=proposal]{border-color:#34587a}
+.node:before,.node:after{content:'';position:absolute;left:calc(50% - 4px);width:8px;height:8px;border-radius:50%;background:var(--blue);border:1px solid #111;z-index:3}.node:before{top:-5px}.node:after{bottom:-5px}
+.node-head{display:flex;align-items:center;gap:8px;padding:9px 14px;background:#2d2d2d;border-bottom:1px solid var(--line);border-radius:11px 11px 0 0;font-size:11px;color:var(--sub)}
+.node-head .num{font:600 11px var(--mono);color:#fff;background:#3a3a3a;border-radius:5px;padding:0 6px}
+.badge{margin-left:auto;font-size:10.5px;white-space:nowrap;border-radius:20px;padding:1px 8px;border:1px solid}
+.badge.reported{color:var(--green);border-color:#2f6d40;background:#1f3326}.badge.open{color:var(--orange);border-color:#6b5532;background:#33291c}.badge.proposal{color:var(--link);border-color:#34587a;background:#1d2a38}
+.node-body{padding:4px 16px 14px}
+.node h3{font-size:18px;line-height:1.45;margin:12px 0 4px;letter-spacing:-.01em}
+.lane{font-size:10.5px;color:var(--muted);letter-spacing:.06em}
+.ports{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.port{background:#1f1f1f;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.65;color:#c9c9c9}
+.port small{display:flex;align-items:center;gap:5px;font:600 10px var(--mono);letter-spacing:.08em;color:var(--orange);margin-bottom:3px}
+.port.out small{color:var(--green)}.port small:before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.node p.prose{font-size:13.5px;line-height:1.9;color:#c4c4c4;margin:6px 0 12px}
+.node img{border:1px solid var(--line2);border-radius:8px;margin:10px 0}
+.takeaway{border-left:3px solid var(--orange);background:linear-gradient(90deg,#3a2b1b,#262626);border-radius:0 8px 8px 0;padding:9px 12px;font-size:13px;line-height:1.75;color:#f1e3d0}
+.takeaway small{display:block;font:600 10px var(--mono);letter-spacing:.12em;color:var(--orange)}
+.node-links{display:flex;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:12px;padding-top:9px;font-size:11px}
+.canvas-foot{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:11px;color:#a5aaa6;border-top:1px solid var(--line);background:#252525;padding:9px 16px;position:relative;z-index:2}
+.canvas-foot .ok:before{content:'● '}
+
+/* playbook */
+.mix{display:flex;height:42px;border-radius:9px;overflow:hidden;border:1px solid var(--line2);margin:14px 0 10px}
+.mix div{display:flex;align-items:center;justify-content:center;font:600 13px var(--mono);color:#111;min-width:0;overflow:hidden;white-space:nowrap}
+.mix-legend{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:34px}
+.mix-legend div{font-size:12px;color:var(--sub);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+.mix-legend b{display:flex;align-items:center;gap:7px;color:#fff;font-size:13px}.mix-legend b i{width:9px;height:9px;border-radius:2px}
+.mix-legend q{display:block;color:var(--muted);font-size:11.5px;margin-top:4px;quotes:"「" "」"}
+.plays{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.play{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 20px 16px;position:relative;display:flex;flex-direction:column}
+.play .k{font:600 11px var(--mono);color:var(--orange);letter-spacing:.1em}
+.play h3{font-size:19px;line-height:1.45;margin:8px 0 8px}
+.play p{font-size:13.5px;color:#c4c4c4;margin:0 0 14px;flex:1}
+.play .refs{display:flex;gap:6px;flex-wrap:wrap;font-size:11px}
+.play .refs a{background:#2e2e2e;border:1px solid var(--line2);border-radius:20px;padding:1px 9px;text-decoration:none;color:#ddd}.play .refs a:hover{border-color:var(--blue)}
+.play .n{position:absolute;right:18px;top:16px;font:650 26px var(--mono);color:#ffffff22}
+
+/* process: three phases */
+.phases{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:46px;padding:34px 30px 32px}
+.phase{position:relative;z-index:1;display:flex;flex-direction:column;background:#262626;border:1px solid var(--green-d);border-radius:12px;box-shadow:0 6px 18px #0006}
+.phase:not(:last-child):after{content:'';position:absolute;top:58px;right:-47px;width:46px;height:2px;background:var(--orange)}
+.phase .pin{position:absolute;top:54px;width:9px;height:9px;border-radius:50%;background:var(--blue);border:1px solid #111;z-index:2}.phase .pin.l{left:-5px}.phase .pin.r{right:-5px}
+.ph-head{display:flex;align-items:center;gap:8px;padding:9px 14px;background:#2d2d2d;border-bottom:1px solid var(--line);border-radius:11px 11px 0 0;font-size:11px;color:var(--sub)}
+.ph-head b{font:650 11px var(--mono);letter-spacing:.12em;color:var(--orange)}
+.ph-body{padding:6px 16px 16px;display:flex;flex-direction:column;gap:12px;flex:1}
+.ph-body h3{font-size:19px;line-height:1.45;margin:10px 0 0;letter-spacing:-.01em}
+.ph-body h4{font:600 10px var(--mono);letter-spacing:.1em;color:var(--muted);margin:0 0 4px}
+.ph-body p{font-size:13.5px;line-height:1.85;color:#c4c4c4;margin:0}
+.says{display:flex;flex-direction:column;gap:6px}
+.says a{display:block;background:#1f1f1f;border:1px solid var(--line);border-left:2px solid var(--orange);border-radius:4px 8px 8px 4px;padding:6px 10px;font-size:12.5px;line-height:1.6;color:#e9dccb;text-decoration:none}
+.says a:hover{border-color:var(--blue)}.says a:before{content:'人 › ';color:var(--orange);font:600 10px var(--mono)}
+.ph-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-top:auto}
+.ph-metrics div{background:#1f1f1f;padding:8px 10px}.ph-metrics b{display:block;font:650 22px/1.15 var(--mono);color:#fff}.ph-metrics span{font-size:10.5px;color:var(--muted)}
+.daily{display:grid;grid-template-columns:repeat(var(--days),minmax(0,1fr));gap:12px;padding:20px 22px 14px}
+.dcol{display:flex;flex-direction:column;gap:6px;min-width:0}
+.dcol .bars{display:flex;align-items:flex-end;gap:4px;height:150px;border-bottom:1px solid var(--line2);padding:0 4px;border-radius:6px 6px 0 0}
+.dcol .bars i{flex:1;border-radius:3px 3px 0 0;position:relative;min-height:2px}.dcol .bars i b{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font:600 10.5px var(--mono);color:#ddd;white-space:nowrap}
+.dcol .bars i.c{background:var(--blue)}.dcol .bars i.m{background:var(--orange)}
+.dcol small{font:11px var(--mono);color:var(--sub);text-align:center}.dcol[data-phase="1"] .bars{background:#4fbf6b14}.dcol[data-phase="2"] .bars{background:#d9b44a12}.dcol[data-phase="3"] .bars{background:#e0913f14}
+.daily-legend{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 22px 16px;font-size:11.5px;color:var(--muted)}.daily-legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.role{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px}
+.role h3{font-size:15px;margin:0 0 8px;display:flex;align-items:center;gap:8px}.role h3 i{width:9px;height:9px;border-radius:50%}
+.role ul{margin:0;padding-left:1.1em;font-size:13.5px;color:#c4c4c4;line-height:1.85}
+.tl-track.phase-band{background:none;height:22px}
+.band{position:absolute;top:2px;bottom:2px;border-radius:5px;font:600 10.5px/18px var(--mono);color:#111;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* quote */
+.quote{margin:90px auto 0;max-width:860px;text-align:center}
+.quote p{font-size:clamp(22px,3vw,32px);line-height:1.6;letter-spacing:-.01em;margin:0}
+.quote small{display:block;color:var(--muted);margin-top:14px;font-size:13px}
+
+/* archive */
+.archive{display:grid;grid-template-columns:230px 1fr;min-height:600px}
+.side{border-right:1px solid var(--line);background:#222;padding:12px 10px;font-size:13px}
+.side h4{font-size:11px;color:var(--muted);font-weight:600;margin:12px 6px 6px}
+.side button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:8px;width:100%;padding:5px 9px;border-radius:7px;color:#ddd}
+.side button i{width:8px;height:8px;border-radius:2px;flex:none}.side button span{margin-left:auto;font:11px var(--mono);color:var(--muted)}
+.side button:hover{background:#2f2f2f}.side button[aria-pressed=true]{background:#0b5fb8;color:#fff}.side button[aria-pressed=true] span{color:#cfe4ff}
+.side select{width:100%}
+.list{min-width:0}
+.toolbar{position:sticky;top:46px;z-index:5;display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 14px;background:#262626f5;border-bottom:1px solid var(--line)}
+input,select,.chip{font:inherit;font-size:13px;background:#2f2f2f;color:#ddd;border:1px solid var(--line2);border-radius:8px;padding:6px 10px}
+input{flex:1;min-width:160px}input::placeholder{color:#888}
+.chip{cursor:pointer;display:none}.chip.on{display:inline-block;background:#0b5fb8;border-color:var(--blue);color:#fff}
+#count{font-size:12px;color:var(--muted);margin-left:auto}
+#events{padding:8px 14px 20px}
+.event{display:grid;grid-template-columns:86px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid #2f2f2f;scroll-margin-top:110px}
+.event.flash .card{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}
+.time{font:12px var(--mono);color:var(--muted);padding-top:12px}.time small{display:block;font-size:10.5px}
+.card{background:#262626;border:1px solid #3a3a3a;border-left:3px solid var(--green);border-radius:4px 10px 10px 4px;padding:11px 15px}
+.event[data-kind=commit] .card{border-left-color:var(--blue)}.event[data-kind=steer] .card{border-left-color:var(--orange);background:#2a2620}.event[data-kind=review] .card{border-left-color:var(--amber);background:#2b281d}.event[data-kind=preparation] .card,.event[data-kind=deadline] .card{border-left-color:var(--violet)}
+.tag{font:600 10px var(--mono);letter-spacing:.08em;color:var(--muted)}
+.card h3{font-size:15px;margin:3px 0 2px;overflow-wrap:anywhere}
+.summary-text{font-size:13.5px;color:#c9c9c9;margin:4px 0}
+.status{font-size:11.5px;color:var(--muted)}
+.topic-tags{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0 2px}.topic-tags span{background:#30352f;color:#c5d2c8;border:1px solid #455047;border-radius:20px;padding:0 8px;font-size:10.5px}
+details{display:inline-block;margin:6px 16px 0 0;font-size:12px;vertical-align:top}details[open]{display:block}summary{cursor:pointer;color:var(--sub)}
+.body{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;color:#cfcfcf}
+pre{white-space:pre-wrap;word-break:break-all;font-size:10.5px;color:#aaa}
+.empty{padding:50px;text-align:center;color:var(--muted)}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.note{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:13px;color:#cfcfcf}.note b{color:#fff}
+
+/* status bar */
+.statusbar{position:sticky;bottom:0;z-index:20;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;padding:6px 14px;background:#232323f2;backdrop-filter:blur(10px);border-top:1px solid #000;font-size:12px;color:var(--sub)}
+.statusbar .ok:before{content:'● '}
+footer{padding:40px 0 30px;font-size:12px;color:var(--muted)}
+
+@media(max-width:900px){.phases{grid-template-columns:1fr;padding:26px 16px}.phase:not(:last-child):after{top:auto;bottom:-47px;right:auto;left:calc(50% - 1px);width:2px;height:46px}.phase .pin{display:none}.roles{grid-template-columns:1fr}.daily{gap:6px;padding:20px 12px 14px}.stats{grid-template-columns:repeat(3,1fr)}.plays{grid-template-columns:1fr 1fr}.gallery{grid-template-columns:1fr}.thumbs{border-left:0;border-top:1px solid var(--line);flex-direction:row;overflow-x:auto}.thumbs button{flex-direction:column;min-width:120px;border-bottom:0;border-right:1px solid var(--line)}.thumbs .what{display:none}.mix-legend{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.wrap{padding:0 16px}.tabs{display:none}.hero .wrap{padding-top:40px}.stats{grid-template-columns:1fr 1fr}.stat b{font-size:26px}.flow{display:flex;flex-direction:column;gap:40px;padding:26px 14px 30px}.flow-wires{display:none}.ports{grid-template-columns:1fr}.plays{grid-template-columns:1fr}.archive{grid-template-columns:1fr}.side{border-right:0;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:4px}.side h4{width:100%;margin:6px 4px 2px}.side button{width:auto}.side select{width:100%}.event{grid-template-columns:1fr;gap:2px}.time{padding:0}.time small{display:inline;margin-left:8px}.notes{grid-template-columns:1fr}.toolbar{top:46px}section.block{padding-top:60px}.countdown{font-size:11px}}
+
+/* chronicle: moments instead of raw sources */
+.moments{border-top:1px solid var(--line);margin-top:12px;padding-top:8px}
+.moments summary{font:600 10px var(--mono);letter-spacing:.1em;color:var(--muted)}
+.moments ol{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:5px}
+.moments li{display:grid;grid-template-columns:78px 1fr;gap:8px;font-size:12px;line-height:1.55;color:#c9c9c9}
+.moments time{font:10.5px var(--mono);color:var(--muted);padding-top:1px}
+.moments li[data-kind=steer]{color:#e9dccb}.moments li[data-kind=steer] time{color:var(--orange)}
+.moments li[data-kind=commit] time{color:var(--link)}
+.about{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.about .note{font-size:13.5px;line-height:1.85}
+@media(max-width:900px){.about{grid-template-columns:1fr}}
+
+/* documentary */
+.doc-lead{max-width:760px;font-size:16px;color:#d6d6d6;margin:0 0 28px}
+.reel{position:relative;padding-left:0}
+.scene{display:grid;grid-template-columns:150px minmax(0,1fr);gap:26px;padding:26px 0;border-top:1px solid var(--line)}
+.scene:first-child{border-top:0}
+.scene-when{position:sticky;top:64px;align-self:start}
+.scene-when b{display:block;font:600 12px var(--mono);color:#7db4e8;letter-spacing:.04em}
+.scene-when span{display:block;font:600 11px var(--mono);color:var(--muted);margin-top:4px}
+.scene h3{font-size:21px;line-height:1.4;margin:0 0 10px;letter-spacing:-.01em}
+.scene p{margin:0 0 14px;color:#d2d2d2;font-size:14.5px;line-height:1.95;max-width:760px}
+.scene .says{max-width:760px}
+.scene .says a{cursor:default}
+.scene .says a small{display:inline-block;margin-right:8px;font:600 10px var(--mono);color:var(--muted)}
+.voices{display:flex;flex-direction:column;gap:6px;margin-top:10px;max-width:760px}
+.voices q{display:block;background:#1f1b24;border:1px solid #3d3446;border-left:2px solid var(--violet);border-radius:4px 8px 8px 4px;padding:6px 10px;font-size:13px;color:#e6dcef;quotes:"「" "」"}
+.voices q:before{content:'声 › 「';color:var(--violet);font:600 10px var(--mono)}
+.scene-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.scene-links a{font:600 11px var(--mono);background:#1b2633;border:1px solid #2f4a66;border-radius:6px;padding:2px 9px;text-decoration:none}
+.loop{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;padding:16px}
+.loop a,.loop div{display:block;background:#262626;border:1px solid var(--green-d);border-radius:10px;padding:10px 12px;font-size:12.5px;color:#d8d8d8;text-decoration:none;line-height:1.6}
+.loop a:hover{border-color:var(--blue)}
+.loop b{display:flex;justify-content:space-between;font:600 11px var(--mono);color:var(--green);margin-bottom:4px}
+.loop b span{color:var(--muted)}
+@media(max-width:700px){.scene{grid-template-columns:1fr;gap:8px}.scene-when{position:static}}
+.vis{margin:0 0 12px}.vis img[src*="icon-"]{max-width:170px}.vis figcaption{font-size:11.5px;color:var(--muted);margin-top:6px}
+.tick.pr{background:var(--violet)}.cell.ses{background:#7ba6cb;opacity:.75}
+.tl-row.rel .tl-track{height:100%}.relmark{position:absolute;top:3px;transform:translateX(-50%);font:600 9.5px var(--mono);color:#fff;background:#b8552e;border-radius:4px;padding:1px 4px;white-space:nowrap;z-index:2}
+.tick.pr.k-feat{background:#5eafff}.tick.pr.k-fix{background:#ef6f6c}.tick.pr.k-docs{background:#d9b44a}.tick.pr.k-demo{background:#4fbf6b}.tick.pr.k-dev{background:#9a9a9a}
+.rel-wires{position:absolute;left:0;top:0;pointer-events:none;z-index:1}.rel-wires path{fill:none;stroke-width:1.1;opacity:.6}
+.relmark{cursor:pointer}
+#releases.block{padding-top:18px}
+.rel-legend{display:flex;gap:16px;flex-wrap:wrap;padding:10px 16px 4px;font-size:12px;color:var(--sub)}.rel-legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px}
+.rel-list{padding:6px 10px 12px}
+details.rel{display:block;width:auto;border-top:1px solid var(--line)}.rel:first-child{border-top:0}
+.rel summary{display:grid;grid-template-columns:70px 110px minmax(0,1fr) 54px;gap:12px;align-items:center;padding:8px 6px;cursor:pointer;font-size:13px;list-style:none}
+.rel summary::-webkit-details-marker{display:none}
+.rel summary b{font:600 12px var(--mono)}.rel-when{font:11px var(--mono);color:var(--muted)}.rel-n{font:11px var(--mono);color:var(--sub);text-align:right}
+.rel-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:#333}.rel-bar i{display:block}
+.rel ul{margin:0 0 10px;padding:0 6px 0 88px;list-style:none;font-size:12.5px;color:#d4d4d4}.rel li{padding:2px 0}.rel-k{display:inline-block;width:56px;font:600 10.5px var(--mono)}.rel li a{font:11px var(--mono);margin-right:2px}
+@media(max-width:700px){.rel summary{grid-template-columns:60px minmax(0,1fr) 44px}.rel-when{display:none}.rel ul{padding-left:6px}}
+.kev{position:absolute;display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px 0 5px;background:#262626;border:1px solid var(--line2);border-radius:10px;font-size:10.5px;color:#ddd;white-space:nowrap;text-decoration:none;z-index:2}.kev:hover{border-color:var(--blue);color:#fff}.kev.r{transform:translateX(-100%);flex-direction:row-reverse;padding:0 5px 0 7px}.kev i{width:7px;height:7px;border-radius:50%;flex:none}
+.xchg{max-width:760px;background:#1f1f1f;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-top:4px}
+.xchg-h{font:600 10.5px var(--mono);color:var(--muted);letter-spacing:.06em;margin-bottom:6px}
+.xr{display:grid;grid-template-columns:54px minmax(0,1fr);gap:10px;padding:5px 0;border-top:1px dashed #333;font-size:13px;line-height:1.7;color:#d6d6d6}.xr:first-of-type{border-top:0}
+.xr b{font:600 10.5px var(--mono);padding-top:2px}.xr.h b{color:var(--orange)}.xr.c b{color:var(--green)}
+.kev.chapk{cursor:pointer;font:inherit;font-size:10.5px;color:#ddd}.kev.chapk i{background:var(--orange)}.kev.chapk.alt i{background:var(--link)}.kev em{font:600 9.5px var(--mono);font-style:normal;color:var(--muted)}
+.loc{margin-top:16px}.loc-legend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:10px 16px 0;font-size:12px;color:var(--sub)}.loc-legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px}
+.loc-plot{padding:6px 8px 8px}.loc-plot svg{display:block;font-family:var(--mono)}
+</style>
+
+<div class="titlebar"><div class="lights" aria-hidden="true"><i></i><i></i><i></i></div><b>Tsugumi Chronicle</b><nav class="tabs" aria-label="セクション"><a href="#product">作ったもの</a><a href="#process">開発の段階</a><a href="#timeline">タイムライン</a><a href="#story">Workflow</a><a href="#documentary">密着</a><a href="#playbook">進め方の型</a><a href="#about">記録について</a></nav><span class="countdown" id="countdown"></span></div>
+
+<header class="hero dots"><div class="wrap">
+  <div class="eyebrow">Claude Hackathon 2026 · Build Log</div>
+  <h1>人が<em>問い</em>、<br>Claudeが<em>積む</em>。<br><span>Tsugumi の作られ方。</span></h1>
+  <p class="lead">研究の試行錯誤を「見て、確かめて、手を入れられる形」で残す macOS ワークベンチ <strong>Tsugumi</strong>。それをひとりの人と Claude がどう作ったのかを、<strong>開発セッションとGit履歴から</strong>たどれるようにした記録です。何を頼み、どこで止め、何を確かめたか。</p>
+  <div class="runbar"><a class="runbtn" href="#timeline">▶ 記録をたどる</a><span class="ok" id="run-state"></span><span class="mono" id="run-span"></span><span id="run-open"></span></div>
+  <img class="hero-art" src="assets/tsugumi-hero.svg" alt="手毬から糸を引くツグミと、背景に薄く敷いたWorkflowのキービジュアル">
+  <div class="stats" id="stats"></div>
+  <div class="panel loc"><div class="panel-head"><b>▤ コードの行数の推移</b><span class="pill" id="loc-total"></span><span class="right">main の各コミット後 · 生成物・文法・文書は除く</span></div>
+  <div class="loc-legend" id="loc-legend"></div><div class="loc-plot" id="loc-plot"></div></div>
+  <p class="fine">数字はすべて <span id="range-note"></span> の範囲で数えています（セッション数だけは全期間）。コミットは main に入ったもの（統合コミットを除く）、PR・リリースは GitHub、人の指示・Claude の報告・セッションは Claude Code の全 Tsugumi セッションから数えました。「Claudeの報告」は応答の区切りになった発言の数で、動作を独立に検証したものではありません。</p>
+</div></header>
+
+<main>
+<section class="block" id="product"><div class="wrap">
+  <div class="sec-head"><div><div class="eyebrow">01 · Output</div><h2>作ったもの</h2></div><p>計算やデータ処理を Card のグラフとして組み、AI と実装し、Nix で固定した環境で実行する。入力・コード・出力・実行履歴が残るので、気になった箇所に戻ってやり直せる。</p></div>
+  <div class="panel"><div class="panel-head"><b id="shot-demo">Cas A · Chandra RGB</b><span class="pill">同梱デモ</span><span class="right">11月4日の README のスクリーンショット</span></div>
+  <div class="gallery"><figure class="shot" style="margin:0"><img id="shot-img" src="assets/screenshots/workflow.png" alt=""><figcaption id="shot-cap"></figcaption></figure><div class="thumbs" id="thumbs"><div class="what">Tsugumi の README から。描く → 実装する → 確かめる、の三つの往復を一つの窓で行う。</div></div></div></div>
+</div></section>
+
+<section class="block" id="process"><div class="wrap">
+  <div class="sec-head"><div><div class="eyebrow">02 · Process</div><h2>速く作るために、<br>Claude への渡し方を三度変えた</h2></div><p>骨格を立てる、大きく直す、公開後に細かく磨く。開発の段階ごとに、Claude へ仕事を渡す単位を意図して切り替えました。単位はコミット、指摘をまとめた md 文書、PR です。本人の説明に、Git 履歴と記録から数えた規模を添えています。Claude への指示は、短く言い切る命令形で書いています。</p></div>
+  <div class="canvas dots"><div class="panel-head"><b>▶ 開発のパイプライン</b><span class="pill" id="phase-span"></span><span class="right">数字は記録から自動で集計</span></div>
+  <div class="phases" id="phases"></div>
+  <div class="canvas-foot"><span>境目：最初のレビュー文書のコミット（11/2 16:56）と、最初の PR 統合（#17、11/4 13:21）</span><span>第2段階にも会話での指示は続き、第3段階にも文書での指示がある</span></div></div>
+  <div class="panel" style="margin-top:18px"><div class="panel-head"><b>▥ 1日ごとのコミットと PR 統合</b><span class="right">JST · 日付の横はその日に含まれる段階</span></div>
+  <div class="daily" id="daily"></div>
+  <div class="daily-legend"><span><i style="background:var(--blue)"></i>コミット（main の履歴。PR 内のコミットを含み、統合コミットは除く）</span><span><i style="background:var(--orange)"></i>PR の統合（Git 履歴と GitHub での確認）</span></div></div>
+  <div class="roles">
+    <div class="role"><h3><i style="background:var(--orange)"></i>人が持ったもの</h3><ul><li>仕様書の原案と設計の考え（Nix で環境を固定する、core を分ける）</li><li>触って見つけた指摘。箇条書きで md に書く</li><li>やるか・やらないか、統合してよいかの判断</li><li>研究者やコミュニティへの共有と聞き取り</li></ul></div>
+    <div class="role"><h3><i style="background:var(--green)"></i>Claude に任せたもの</h3><ul><li>実装とテスト。core・SDK・Mac アプリ・Web 版・デモ</li><li>指摘の清書と、独立に進められる作業単位への分割</li><li>自分のコードへの公開前レビューと、その修正</li><li>PR の作成・CI の修正・統合・リリース、ドキュメントの整理、この記録の表示</li></ul></div>
+  </div>
+</div></section>
+
+<section class="block" id="timeline"><div class="wrap">
+  <div class="sec-head"><div><div class="eyebrow">03 · Run timeline</div><h2>開発を、実行タイムラインとして見る</h2></div><p>Tsugumi が Card の実行を時間軸で見せるように、開発そのものを並べました。橙の縦線は人の指示、紫は PR の統合、青い柱は同時に動いていた Claude のセッション数、緑は Claude の報告の量。後半は作業ツリーごとにセッションを分けて並行に進めたので、全セッションから時刻と件数だけを数えています。Key Event は下の Workflow の各 Card で、押すとその Card へ移ります。</p></div>
+  <div class="panel"><div class="panel-head"><b>▥ タイムライン</b><span>実行</span><span class="pill mono" id="tl-range"></span><span class="right">斜線：0〜7時（JST）</span></div>
+  <div class="tl-scroll"><div class="tl" id="tl"></div></div>
+  <div class="tl-foot"><div class="bookends" id="bookends"></div><span>横軸は1時間ごと（JST）。高さは1時間あたりの数。人の指示・報告・セッション数は Claude Code の全 Tsugumi セッションから数えた。</span></div></div>
+</div></section>
+
+<section class="block" id="releases"><div class="wrap">
+  <div class="panel"><div class="panel-head"><b>◆ 版ごとに入ったもの</b><span class="right">GitHub のリリースノートにある PR · 分類は題名から機械的に付けた目安</span></div>
+  <div class="rel-legend" id="rel-legend"></div><div class="rel-list" id="rel-list"></div></div>
+</div></section>
+
+<section class="block" id="story"><div class="wrap">
+  <div class="sec-head"><div><div class="eyebrow">04 · Workflow</div><h2>人の問いを入力に、<br>Claude の実装が出力になる</h2></div><p>主要な段階を Tsugumi の Card に見立てました。左の入力は人の指示、右の出力は返ってきた結果。下の <span style="color:var(--orange)">TAKEAWAY</span> は、同じやり方を試す人への覚え書きです。</p></div>
+  <div class="canvas dots"><div class="panel-head"><b>開発の記録</b><span class="pill" id="canvas-count"></span><span class="right"><span class="ok">✓ Claudeの報告</span> · <span style="color:var(--link)">◇ 提案</span> · <span class="warn">△ 残課題あり</span></span></div>
+  <div class="flow" id="flow"></div>
+  <div class="canvas-foot"><span class="ok">11/7 時点</span><span>実線：記録の流れ・組み込み</span><span>点線：別の制作へ（開始時刻・依存関係は表しません）</span><span>画像は現在の素材で、当時の画面とは限りません</span></div></div>
+</div></section>
+
+<section class="block" id="documentary"><div class="wrap">
+  <div class="sec-head"><div><div class="eyebrow">05 · Documentary</div><h2 id="doc-title"></h2></div><p id="doc-basis"></p></div>
+  <p class="doc-lead" id="doc-lead"></p>
+  <div class="reel" id="reel"></div>
+  <div class="panel" style="margin-top:28px"><div class="panel-head"><b>↺ 映像からアプリへ戻ったもの</b><span class="right">GitHub の PR · 時刻は JST</span></div><div class="loop" id="loop"></div></div>
+</div></section>
+
+<section class="block" id="playbook"><div class="wrap">
+  <div class="sec-head"><div><div class="eyebrow">06 · Playbook</div><h2>ひとりと Claude で作るための型</h2></div><p>記録に取り込んだ人の指示（<span id="mix-n"></span>）を見出しの語で四つに分けると、「作って」と頼んだ回数よりも、決める・問うほうが多い。記録から見えた進め方を六つにまとめます。</p></div>
+  <div class="mix" id="mix" aria-label="人の指示の内訳"></div><div class="mix-legend" id="mix-legend"></div>
+  <div class="plays" id="plays"></div>
+  <p class="fine">内訳は記録担当が付けた見出しの語（方針・確認・依頼・push など）による機械的な分類で、厳密な分類ではありません。</p>
+  <div class="quote"><p>AI に使われないような研究・仕事をする上で、<br>あなたはどのようなツールを作りますか？</p><small>— Tsugumi <a href="https://github.com/gen740/Tsumugi/blob/main/docs/Philosophy.md">docs/Philosophy.md</a> より</small></div>
+</div></section>
+
+<section class="block" id="about"><div class="wrap">
+  <div class="sec-head"><div><div class="eyebrow">07 · About</div><h2>この記録について</h2></div><p>開発中の会話・コミット・レビューは別の場所に残していますが、ここに載せたのはその要約と、選んだ指示の引用です。個人的な内容や認証情報が混じっていないことを全件では保証できないため、Claude の報告の本文やレビュー文書の原文は公開していません。</p></div>
+  <div class="about">
+    <div class="note"><b>載せたもの</b><br>各段階の要約と教訓（Claude が記録から書いたもの）、人の指示を要約した見出し、GitHub で公開されているコミット・PR・リリースの事実、開発の段階ごとに選んだ本人の指示の引用（内容のみ）、「密着」と一部の Card に付けたセッションでのやりとりの要約、デモ映像に使われたインタビューの発言、件数と時刻。</div>
+    <div class="note"><b>載せていないもの</b><br>Claude の報告の本文、人名・ファイルの場所・録音のファイル名、レビュー文書の原文、作業途中の進行メモ、個人の予定やアカウントの情報、他の AI との私的な相談。</div>
+    <div class="note"><b>読み方</b><br>「Claudeの報告」は発言の記録で、動作を独立に検証したものではありません。コードと履歴は <a href="https://github.com/gen740/Tsugumi">gen740/Tsugumi</a> で確かめられます。<br><span id="generated"></span></div>
+  </div>
+</div></section>
+</main>
+<footer><div class="wrap" id="footer"></div></footer>
+<div class="statusbar" id="statusbar"></div>
+<div id="tip" role="tooltip"></div>
+<script src="data/chronicle.js"></script><script>
+const D=window.CHRONICLE;const chapters=D.chapters;
+const $=s=>document.querySelector(s);
+const node=(tag,text,cl)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cl)n.className=cl;return n};
+const fmt=(t,opts)=>new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',...opts}).format(new Date(t));
+const H=3600e3;const jstHour=t=>Number(fmt(t,{hour:'numeric',hourCycle:'h23'}).replace(/\D/g,''));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const [t0,t1]=D.range;
+const flash=el=>{el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),1600)};
+const goCard=n=>{const el=document.querySelector(`.node[data-chapter="${n}"]`);if(el)flash(el)};
+
+/* titlebar + hero */
+function tick(){const left=D.deadline-Date.now();$('#countdown').innerHTML=left>0?`提出まで <b>${Math.floor(left/864e5)}日 ${Math.floor(left%864e5/H)}時間</b>`:'提出締切 <b>11/8 20:00</b> を経過'}
+tick();setInterval(tick,6e4);
+$('#run-state').textContent='✓ 11/7 までの記録';
+$('#run-span').textContent=((t1-t0)/H).toFixed(1)+' 時間の記録';
+$('#run-open').innerHTML=`<span class="warn">△</span> 残課題のある段階 ${chapters.filter(c=>c.verdict==='open').length} 件`;
+const LOC=D.code_lines,locSum=p=>LOC.groups.reduce((s,k)=>s+p[k],0),locLast=LOC.points[LOC.points.length-1];
+for(const [v,l,c] of [[locSum(locLast).toLocaleString('en-US'),'行のコード','#e5e5e5'],[D.stats.commits,'コミット（統合を除く）','var(--blue)'],[D.stats.steers,'人の指示','var(--orange)'],[D.stats.prs,'PR の統合','var(--amber)'],[D.stats.reports,'Claudeの報告','var(--green)'],[D.stats.sessions,'開発セッション','#888']]){const n=node('div',undefined,'stat');n.append(node('b',String(v)));const s=node('span');s.innerHTML=`<i style="background:${c}"></i>${l}`;n.append(s);$('#stats').append(n)}
+
+/* product gallery */
+const SHOT_DEMO={workflow:'Cas A · Chandra RGB',subworkflow:'Collatz (C++ / Python)','card-source':'Cas A · Chandra RGB',timeline:'Cas A · Chandra RGB'};
+const shots=[['workflow','全体の流れを見渡す','中央の Canvas に入力から比較までの流れ。左で階層を選び、右のチャットで Agent に依頼する。'],['subworkflow','気になる処理の中へ入る','複合 Card を開くと、条件分岐と反復を含む内部の処理までたどれる。'],['card-source','コードを読み、条件を変えて試す','Card の設定でソースと入出力を確認し、保存された入力でその Card だけ再実行する。'],['timeline','実際に何が動いたかを振り返る','各 Card がいつ、どのくらい動いたかを時間軸で確認する。このページのタイムラインの元ネタ。']];
+function showShot(i){const [f,t,d]=shots[i];$('#shot-demo').textContent=SHOT_DEMO[f];$('#shot-img').src=`assets/screenshots/${f}.png`;$('#shot-img').alt=t;$('#shot-cap').replaceChildren(node('b',t),document.createTextNode(d));document.querySelectorAll('#thumbs button').forEach((b,j)=>b.setAttribute('aria-pressed',String(i===j)))}
+shots.forEach(([f,t],i)=>{const b=node('button');const im=node('img');im.src=`assets/screenshots/${f}.png`;im.alt='';b.append(im,node('span',t));b.onclick=()=>showShot(i);$('#thumbs').insertBefore(b,$('#thumbs .what'))});showShot(0);
+
+/* process: three phases */
+const PH=[
+ {title:'main に、コミットを積み上げる',when:'11/2 13:15 – 16:56',
+  how:'自分で書いた仕様書 <code>instruction.md</code>（578 行）をリポジトリに置き、一つのセッションに渡す。ブランチもレビューも挟まず、Claude が main に直接コミットしていく。',
+  why:'最初は分岐や統合の手間をなくし、骨格を一気に動くところまで持っていく。core（tsugumid）、Card SDK、SwiftUI アプリ、Agent、デモまでを一続きで作らせた。'},
+ {title:'md に長い指摘を書き、まとめて積ませる',when:'11/2 16:56 – 11/4 13:21',
+  how:'触って気づいた点を <code>review-from-user.md</code> に箇条書きし、「commit &amp; push してから取りかかれ」と渡す。清書は実装とは別のセッションに任せ、独立に進められる作業単位（A〜N）に分けた。Claude 自身にも公開前レビュー（31 項目）を書かせ、同じ流れで実装させた。',
+  why:'一つずつ口頭で頼む往復を減らし、数十項目の大きな変更を一度に積ませる。指示書が先にコミットされるので、どの変更が何に応えたものかが履歴に残る。'},
+ {title:'main の session から細かく指示し、PR を大量に積む',when:'11/4 13:21 – 11/7',
+  how:'OSS として公開してからは、main の session を指示の窓口にした。一言の修正依頼を送ると、作業ごとのセッションが PR にし、CI が通れば統合し、まとまったところでリリースする。上限で止まったセッションは、別のセッションが引き継いだ。',
+  why:'公開後は main を壊さずに速く進めたい。変更を小さな PR に分ければ、並行しても衝突しにくく、CI で確かめてから入れられ、問題があれば一本だけ戻せる。'}];
+D.phases.forEach((p,i)=>{const P=PH[i];const a=node('article',undefined,'phase');a.append(node('i',undefined,'pin l'),node('i',undefined,'pin r'));
+ const h=node('div',undefined,'ph-head');h.append(node('b','PHASE '+p.n),node('span','◇ '+P.when));
+ const b=node('div',undefined,'ph-body');b.append(node('h3',P.title));
+ const s=node('div',undefined,'says');for(const q of p.quotes)s.append(node('a',q));
+ const how=node('div');how.append(node('h4','HOW · 渡し方'));const hp=node('p');hp.innerHTML=P.how;how.append(hp);
+ const why=node('div',undefined,'takeaway');why.append(node('small','WHY · 意図'),document.createTextNode(P.why));
+ const m=node('div',undefined,'ph-metrics');for(const [v,l] of p.metrics){const d=node('div');d.append(node('b',String(v)),node('span',l));m.append(d)}
+ b.append(s,how,why,m);a.append(h,b);$('#phases').append(a)});
+$('#phase-span').textContent=`PR 統合 ${D.stats.prs} 本 · リリース ${D.stats.releases} 版`;
+{const max=Math.max(...D.daily.flatMap(r=>[r.commits,r.merges]));$('#daily').style.setProperty('--days',D.daily.length);
+ for(const r of D.daily){const col=node('div',undefined,'dcol');col.dataset.phase=r.phases[r.phases.length-1];const bars=node('div',undefined,'bars');for(const [v,cl] of [[r.commits,'c'],[r.merges,'m']]){const i=node('i',undefined,cl);i.style.height=(v/max*100)+'%';i.append(node('b',String(v)));bars.append(i)}col.append(bars,node('small',fmt(r.d,{month:'numeric',day:'numeric'})+' · 段階'+r.phases.join('→')));$('#daily').append(col)}}
+
+/* run timeline */
+const T0=Math.floor(t0/H)*H,T1=Math.ceil(t1/H)*H,span=T1-T0,pct=t=>((t-T0)/span*100)+'%';
+$('#tl-range').textContent=fmt(T0,{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' – '+fmt(t1,{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+const tip=$('#tip');
+function hover(el,html){el.addEventListener('mouseenter',()=>{tip.innerHTML=html;tip.style.display='block'});el.addEventListener('mousemove',ev=>{const x=Math.min(ev.clientX+14,innerWidth-tip.offsetWidth-8);tip.style.left=x+'px';tip.style.top=(ev.clientY+16)+'px'});el.addEventListener('mouseleave',()=>tip.style.display='none')}
+function row(label,color,cls){const r=node('div',undefined,'tl-row'+(cls?' '+cls:''));const l=node('div',undefined,'tl-label');if(color){const i=node('i');i.style.background=color;l.append(i)}l.append(document.createTextNode(label));const tr=node('div',undefined,'tl-track');r.append(l,tr);$('#tl').append(r);return tr}
+function decorate(tr){for(let t=T0;t<T1;t+=H){const h=jstHour(t);if(h<7){const n=node('div',undefined,'night');n.style.left=pct(t);n.style.width=(H/span*100)+'%';tr.append(n)}const g=node('div',undefined,'gridline'+(h===0?' day':''));g.style.left=pct(t);tr.append(g)}}
+const axis=row('',null,'tl-axis');for(let t=T0;t<=T1;t+=H){const h=jstHour(t);if(h%3&&h!==0)continue;const s=node('span',h===0?fmt(t,{month:'numeric',day:'numeric'}):h+'時',h===0?'day':'');s.style.left=pct(t);axis.append(s)}
+const band=row('開発の段階',null);band.classList.add('phase-band');D.phases.forEach((p,i)=>{const s=node('div',i===0?'1':`${p.n} ${['','md で指摘','PR を量産'][i]}`,'band');s.style.left=pct(Math.max(p.start,T0));s.style.width=((Math.min(p.end,T1)-Math.max(p.start,T0))/span*100)+'%';s.style.background=['var(--green)','var(--amber)','var(--orange)'][i];hover(s,`<b>PHASE ${p.n} · ${esc(PH[i].title)}</b>${esc(PH[i].when)}`);band.append(s)});
+const chapTr=row('Key Event',null);chapTr.classList.add('chaps');decorate(chapTr);
+const chips=[];for(const c of chapters.filter(c=>c.start).sort((a,b)=>a.start-b.start)){const b=node('button',undefined,'kev chapk'+(c.lane==='アプリ・仕様'?'':' alt'));b.append(node('i'),node('em',c.number.replace(/^0/,'')),document.createTextNode(c.title));b.style.left=pct(c.start);chips.push([b,c.start]);b.setAttribute('aria-label',c.title);hover(b,`<b>${esc(c.number)} ${esc(c.title)}</b>${esc(c.date)}<small>${esc(c.lane)}</small>`);b.onclick=()=>goCard(c.number);chapTr.append(b)}
+chips.sort((a,b)=>a[1]-b[1]);
+function stackChips(){const w=chapTr.clientWidth||900,ends=[];for(const [b,t] of chips){const x=(t-T0)/span*w,bw=b.offsetWidth||24,isK=b.classList.contains('kev');const r=isK&&x+bw>w-2;b.classList.toggle('r',r);const s=isK?(r?x-bw:x):x-bw/2,e=isK?(r?x:x+bw):x+bw/2;let l=ends.findIndex(v=>s-v>=4);if(l<0)l=ends.length;ends[l]=e;b.style.top=2+l*24+'px'}chapTr.style.height=ends.length*24+6+'px'}stackChips();new ResizeObserver(stackChips).observe(chapTr);
+const KIND={steer:['人の指示','var(--orange)'],review:['レビュー','var(--amber)'],commit:['コミット','var(--blue)']};
+for(const k of ['steer','review','commit']){const tr=row(KIND[k][0],KIND[k][1]);decorate(tr);for(const t of D.ticks[k]){const b=node('span',undefined,'tick '+k);b.style.left=pct(t);tr.append(b)}}
+const PRK={feat:['機能','#5eafff'],fix:['修正','#ef6f6c'],docs:['文書','#d9b44a'],demo:['デモ','#4fbf6b'],dev:['開発環境','#9a9a9a']};const relOf={};for(const r of D.release_marks)for(const n of r.prs)relOf[n]=r.tag;
+const prRow=row('PR の統合','var(--violet)');decorate(prRow);for(const x of D.pr_merges){const b=node('span',undefined,'tick pr k-'+x.kind);b.dataset.pr=x.n;b.style.left=pct(x.t);hover(b,`<b>#${x.n} ${esc(x.title)}</b><small>${PRK[x.kind][0]}</small>${fmt(x.t,{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} 統合`);prRow.append(b)}
+const relRow=row('リリース','#e06b3a');relRow.classList.add('rel');decorate(relRow);for(const x of D.release_marks){const b=node('span',x.tag.replace(/^v/,''),'relmark');b.style.left=pct(x.t);b.dataset.tag=x.tag;const cnt={};for(const n of x.prs){const k=(D.pr_merges.find(p=>p.n===n)||{}).kind;if(k)cnt[k]=(cnt[k]||0)+1}hover(b,`<b>${esc(x.tag)}</b>${fmt(x.t,{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} 公開 · PR ${x.prs.length} 本<small>${Object.entries(cnt).map(([k,v])=>PRK[k][0]+' '+v).join(' · ')}</small>`);b.onclick=()=>{const el=document.getElementById('rel-'+x.tag);if(el){el.open=true;el.scrollIntoView({block:'center'})}};relRow.append(b)}
+function stackRel(){const w=relRow.clientWidth||900,ends=[];for(const b of relRow.querySelectorAll('.relmark')){const x=parseFloat(b.style.left)/100*w,bw=b.offsetWidth||30;let l=ends.findIndex(e=>x-bw/2-e>=3);if(l<0)l=ends.length;ends[l]=x+bw/2;b.style.top=3+l*17+'px'}relRow.style.height=Math.max(1,ends.length)*17+8+'px'}stackRel();
+const relSvg=document.createElementNS('http://www.w3.org/2000/svg','svg');relSvg.classList.add('rel-wires');$('#tl').append(relSvg);
+function drawRel(){const box=$('#tl').getBoundingClientRect();relSvg.setAttribute('viewBox',`0 0 ${box.width} ${box.height}`);relSvg.setAttribute('width',box.width);relSvg.setAttribute('height',box.height);relSvg.replaceChildren();
+ const marks={};relRow.querySelectorAll('.relmark').forEach(m=>{const r=m.getBoundingClientRect();marks[m.dataset.tag]=[r.left+r.width/2-box.left,r.top-box.top]});
+ prRow.querySelectorAll('.tick.pr').forEach(t=>{const tag=relOf[t.dataset.pr];if(!tag||!marks[tag])return;const r=t.getBoundingClientRect();const x1=r.left+r.width/2-box.left,y1=r.bottom-box.top,[x2,y2]=marks[tag];const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',`M ${x1} ${y1} C ${x1} ${(y1+y2)/2}, ${x2} ${(y1+y2)/2}, ${x2} ${y2}`);p.setAttribute('stroke',PRK[(D.pr_merges.find(q=>q.n==t.dataset.pr)||{}).kind||'feat'][1]);p.dataset.tag=tag;relSvg.append(p)})}
+function relayout(){stackRel();drawRel()}relayout();new ResizeObserver(relayout).observe(relRow);
+const ses=row('セッション数','#7ba6cb');ses.classList.add('tall');decorate(ses);const maxS=Math.max(...D.sessions_per_hour);
+D.sessions_per_hour.forEach((p,i)=>{if(!p)return;const t=T0+i*H;const c=node('span',undefined,'cell ses');c.style.left=`calc(${pct(t)} + 1px)`;c.style.width=`calc(${H/span*100}% - 2px)`;c.style.height=Math.max(3,p/maxS*100)+'%';hover(c,`<b>${fmt(t,{month:'numeric',day:'numeric'})} ${jstHour(t)}時台</b>同時に動いていたセッション ${p}`);ses.append(c)});
+const prog=row('Claudeの報告','var(--green)');prog.classList.add('tall');decorate(prog);
+const maxP=Math.max(...D.reports_per_hour);
+D.reports_per_hour.forEach((p,i)=>{if(!p)return;const t=T0+i*H;const c=node('span',undefined,'cell');c.style.left=`calc(${pct(t)} + 1px)`;c.style.width=`calc(${H/span*100}% - 2px)`;c.style.height=Math.max(3,p/maxP*100)+'%';c.style.opacity=.35+.65*p/maxP;hover(c,`<b>${fmt(t,{month:'numeric',day:'numeric'})} ${jstHour(t)}時台</b>報告 ${p}`);prog.append(c)});
+$('#bookends').append(node('span',`提出締切 ${fmt(D.deadline,{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} ▶`));
+
+/* story canvas */
+const VERDICT={reported:'✓ Claudeの報告',open:'△ 残課題あり',proposal:'◇ 提案のみ'};
+const MK={steer:'人',report:'Claude',commit:'commit',review:'review'};
+$('#canvas-count').textContent=chapters.length+' Cards';
+for(const c of chapters){const card=node('article',undefined,'node');card.dataset.chapter=c.number;card.dataset.verdict=c.verdict;card.style.gridRow=c.row;card.style.gridColumn=c.column;card.style.order=c.row;
+ const head=node('div',undefined,'node-head');head.append(node('span',c.number,'num'),node('span','◇ '+c.date),node('span',VERDICT[c.verdict],'badge '+c.verdict));
+ const body=node('div',undefined,'node-body');body.append(node('h3',c.title),node('div',c.lane,'lane'));
+ if(c.direction){const ports=node('div',undefined,'ports');const i=node('div',undefined,'port in');i.append(node('small','INPUT · 人'),document.createTextNode(c.direction));const o=node('div',undefined,'port out');o.append(node('small','OUTPUT · 結果'),document.createTextNode(c.result));ports.append(i,o);body.append(ports)}
+ if(c.visual){const img=node('img');img.src=c.visual.src;img.alt=c.visual.alt;const fig=node('figure',undefined,'vis');fig.append(img,node('figcaption',c.visual.label+' — '+c.visual.alt));body.append(fig)}
+ body.append(node('p',c.narrative,'prose'));
+ if(c.lesson){const t=node('div',undefined,'takeaway');t.append(node('small','TAKEAWAY'),document.createTextNode(c.lesson));body.append(t)}
+ if(c.exchange){const d=node('details',undefined,'moments xd');d.append(node('summary',`セッションでのやりとり ${c.exchange.length}`));d.append(exchange(c.exchange));body.append(d)}
+ if(c.moments.length){const d=node('details',undefined,'moments');d.append(node('summary',`主な出来事 ${c.moments.length}`));const ol=node('ol');for(const m of c.moments){const li=node('li');li.dataset.kind=m.kind;li.append(node('time',fmt(m.t,{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})));const s=node('span');if(m.url){const a=node('a',m.title);a.href=m.url;s.append(document.createTextNode(MK[m.kind]+' · '),a)}else s.textContent=MK[m.kind]+' · '+m.title;li.append(s);ol.append(li)}d.append(ol);body.append(d)}
+ card.append(head,body);$('#flow').append(card)}
+const wires=document.createElementNS('http://www.w3.org/2000/svg','svg');wires.setAttribute('class','flow-wires');wires.setAttribute('aria-hidden','true');$('#flow').prepend(wires);
+const storyEdges=[['01','02'],['01','03'],['02','03b'],['03','03b'],['03b','04'],['04','05'],['05','06'],['06','07'],['07','08'],['08','09'],['09','12'],['06','11','parallel'],['11','10','parallel'],['11','23','parallel'],['07','10','parallel'],['12','13','parallel'],['12','14'],['13','14','parallel'],['14','15','parallel'],['14','16'],['15','16'],['16','17','parallel'],['16','18'],['18','19'],['17','20','parallel'],['19','21'],['20','21','parallel'],['21','21a','parallel'],['21','21b'],['21','22','parallel'],['21a','22a','parallel'],['21b','23'],['22a','23','parallel'],['23','23a'],['23a','23b'],['23a','23c','parallel'],['23b','24'],['23c','24','parallel'],['22','24','parallel'],['24','24a','parallel'],['24','24b'],['24b','25'],['25','25a','parallel'],['25','25b']];
+function drawWires(){const box=$('#flow').getBoundingClientRect();wires.setAttribute('viewBox',`0 0 ${box.width} ${box.height}`);wires.replaceChildren();for(const [from,to,type] of storyEdges){const A=document.querySelector(`[data-chapter="${from}"]`),B=document.querySelector(`[data-chapter="${to}"]`);if(!A||!B)continue;const a=A.getBoundingClientRect(),b=B.getBoundingClientRect();const x1=a.left+a.width/2-box.left,y1=a.bottom-box.top,x2=b.left+b.width/2-box.left,y2=b.top-box.top,m=Math.max(24,(y2-y1)/2);const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',`M ${x1} ${y1} C ${x1} ${y1+m}, ${x2} ${y2-m}, ${x2} ${y2}`);p.setAttribute('fill','none');p.setAttribute('stroke',type?'#7ba6cb':'#e0913f');p.setAttribute('stroke-width','1.6');if(type)p.setAttribute('stroke-dasharray','5 5');wires.append(p)}}
+new ResizeObserver(drawWires).observe($('#flow'));window.addEventListener('load',drawWires);
+
+/* playbook */
+for(const m of D.mix){const d=node('div',m.label+' '+m.count);d.style.background=m.color;d.style.flex=m.count;$('#mix').append(d);const L=node('div');const b=node('b');const i=node('i');i.style.background=m.color;b.append(i,document.createTextNode(`${m.label} · ${m.count}件`));L.append(b);if(m.example)L.append(node('q',m.example));$('#mix-legend').append(L)}
+const plays=[
+ ['FILE, NOT CHAT','指示はファイルで渡す','気づいた点は review-from-user.md に書き、先にコミットしてから「これに沿って直して」と頼む。指示が履歴に残り、何に応えた実装かを後から照合できる。',['02','07','08']],
+ ['ASK FIRST','作らせる前に、問う','「VMはプロジェクトごとに要る？」「.binの役割は？」実装を頼む前の確認が、設計を一段軽くした。問いは作業の内側にいるAIより、人が持ちやすい。',['04','05','06']],
+ ['DECIDE OUT LOUD','決めたことを言葉にする','選択肢と影響を説明させ、「了承」「この方針で」と明示する。曖昧なまま進めると、AIは両方を作ろうとする。',['06','07']],
+ ['SPLIT ROLES','セッションを分ける','ツグミの絵、指示書の清書、ドキュメント、デモ映像は、実装とは別の Claude セッションで並行させた。互いに待たず、できたものから合流させる。',['03','07','11','10']],
+ ['SHIP SMALL','小さく確定させる','push・コミットを都度頼み、成果物の場所を確認する。動くものを手元に置いてから次のレビューに進む。',['01','03b']],
+ ['REPORT ≠ VERIFIED','報告と検証を分ける','「実装・テスト完了」は報告。全体の完成、画面での目視、文書の正しさは別に確かめる。この記録自体がその実践。',['08','09']]];
+plays.forEach(([k,h,p,refs],i)=>{const a=node('article',undefined,'play');a.append(node('span',String(i+1).padStart(2,'0'),'n'),node('div',k,'k'),node('h3',h),node('p',p));const r=node('div',undefined,'refs');for(const n of refs){const c=chapters.find(x=>x.number===n);if(!c)continue;const l=node('a',n+' '+c.title);l.href='#story';l.onclick=ev=>{ev.preventDefault();goCard(n)};r.append(l)}a.append(r);$('#plays').append(a)});
+
+/* footer + status bar */
+$('#generated').textContent='データ書き出し '+fmt(D.generated_at,{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})+' JST';
+$('#footer').textContent='Tsugumi Chronicle · 要約版 · ソース: github.com/gen740/Tsugumi';
+$('#statusbar').innerHTML=`<span class="ok">11/7 までの記録</span><span>Card ${chapters.length} · 接続 ${storyEdges.length}</span><span>PR ${D.stats.prs}</span><span>リリース ${D.stats.releases} 版</span>`;
+
+function exchange(list){const box=node('div',undefined,'xchg');box.append(node('div','セッションでのやりとり（要約）','xchg-h'));for(const x of list){const r=node('div',undefined,'xr '+(x.who==='人'?'h':'c'));r.append(node('b',x.who),node('span',x.text));box.append(r)}return box}
+// documentary
+{const doc=D.documentary;$('#doc-title').textContent=doc.title;$('#doc-basis').textContent=doc.basis;$('#doc-lead').textContent=doc.lead;
+ const hm=t=>fmt(t,{hour:'2-digit',minute:'2-digit'});const md=t=>fmt(t,{month:'numeric',day:'numeric'});
+ doc.scenes.forEach((s,i)=>{const el=node('article',undefined,'scene');const w=node('div',undefined,'scene-when');w.append(node('b',s.label),node('span','SCENE '+String(i+1).padStart(2,'0')));
+  const body=node('div');body.append(node('h3',s.title),node('p',s.body));
+  if(s.exchange)body.append(exchange(s.exchange));
+  if(s.voices){const v=node('div',undefined,'voices');for(const x of s.voices)v.append(node('q',x));body.append(v)}
+  if(s.links){const l=node('div',undefined,'scene-links');for(const x of s.links){const a=node('a',x.label);a.href=x.url;a.target='_blank';a.rel='noopener';l.append(a)}body.append(l)}
+  el.append(w,body);$('#reel').append(el)});
+ for(const l of doc.loop){const el=node(l.pr?'a':'div');if(l.pr){el.href='https://github.com/gen740/Tsugumi/pull/'+l.pr;el.target='_blank';el.rel='noopener'}const b=node('b');b.append(document.createTextNode(l.pr?'#'+l.pr:'md'),node('span',md(l.t)+' '+hm(l.t)));el.append(b,document.createTextNode(l.what));$('#loop').append(el)}}
+
+// releases panel
+{for(const [k,[l,c]] of Object.entries(PRK)){const s=node('span');const i=node('i');i.style.background=c;s.append(i,document.createTextNode(l+' '+D.pr_merges.filter(p=>p.kind===k).length));$('#rel-legend').append(s)}
+ const byN=Object.fromEntries(D.pr_merges.map(p=>[p.n,p]));
+ for(const r of D.release_marks){const d=node('details',undefined,'rel');d.id='rel-'+r.tag;const s=node('summary');const prs=r.prs.map(n=>byN[n]).filter(Boolean);
+  const bar=node('span',undefined,'rel-bar');for(const k of Object.keys(PRK)){const n=prs.filter(p=>p.kind===k).length;if(!n)continue;const i=node('i');i.style.background=PRK[k][1];i.style.flex=n;bar.append(i)}
+  s.append(node('b',r.tag),node('span',fmt(r.t,{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}),'rel-when'),bar,node('span',`PR ${prs.length}`,'rel-n'));d.append(s);
+  const ul=node('ul');for(const k of Object.keys(PRK))for(const p of prs.filter(p=>p.kind===k)){const li=node('li');const tag=node('span',PRK[k][0],'rel-k');tag.style.color=PRK[k][1];const a=node('a','#'+p.n);a.href='https://github.com/gen740/Tsugumi/pull/'+p.n;a.target='_blank';a.rel='noopener';li.append(tag,a,document.createTextNode(' '+p.title));ul.append(li)}
+  d.append(ul);$('#rel-list').append(d)}}
+
+// lines of code chart (stacked area, one axis)
+{const G=[['mac','Mac アプリ','#3987e5'],['core','core・SDK・Nix','#d95926'],['web','Web UI','#199e70'],['test','テスト','#c98500'],['demo','デモ','#d55181']];
+ const pts=LOC.points;$('#loc-total').textContent=`いま ${locSum(locLast).toLocaleString('en-US')} 行 · main のコミット ${pts.length}`;
+ for(const [k,l,c] of G){const s=node('span');const i=node('i');i.style.background=c;s.append(i,document.createTextNode(`${l} ${locLast[k].toLocaleString('en-US')}`));$('#loc-legend').append(s)}
+ const NS='http://www.w3.org/2000/svg',el=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e};
+ const plot=$('#loc-plot');
+ function draw(){const W=plot.clientWidth||900,Hh=W<600?200:240,m={l:44,r:12,t:10,b:24},iw=W-m.l-m.r,ih=Hh-m.t-m.b;
+  const x0=pts[0].t,x1=Math.max(pts[pts.length-1].t,D.range[1]);const X=t=>m.l+(t-x0)/(x1-x0)*iw;
+  const maxY=Math.ceil(locSum(locLast)/20000)*20000;const Y=v=>m.t+ih-v/maxY*ih;
+  const svg=el('svg',{viewBox:`0 0 ${W} ${Hh}`,width:W,height:Hh,role:'img','aria-label':'コード行数の推移'});
+  // phase shading
+  D.phases.forEach((p,i)=>{if(i===0)return;const a=X(Math.max(p.start,x0));svg.append(el('line',{x1:a,x2:a,y1:m.t,y2:m.t+ih,stroke:'#555','stroke-dasharray':'3 4'}));const t=el('text',{x:a+4,y:m.t+10,fill:'#8f8f8f','font-size':10});t.textContent=`段階 ${p.n}`;svg.append(t)});
+  for(let v=0;v<=maxY;v+=20000){svg.append(el('line',{x1:m.l,x2:m.l+iw,y1:Y(v),y2:Y(v),stroke:'#333'}));const t=el('text',{x:m.l-6,y:Y(v)+3,fill:'#8f8f8f','font-size':10,'text-anchor':'end'});t.textContent=v?v/1000+'k':'0';svg.append(t)}
+  const day0=new Date(fmt(x0,{year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'-')+'T00:00:00+09:00').getTime();
+  for(let d=day0+864e5;d<x1;d+=864e5){const a=X(d);const t=el('text',{x:a,y:Hh-6,fill:'#8f8f8f','font-size':10,'text-anchor':'middle'});t.textContent=fmt(d,{month:'numeric',day:'numeric'});svg.append(t);svg.append(el('line',{x1:a,x2:a,y1:m.t+ih,y2:m.t+ih+4,stroke:'#555'}))}
+  // stacked areas (step after each commit), 2px surface gap via stroke
+  let base=pts.map(()=>0);
+  for(const [k,,c] of G){const top=pts.map((p,i)=>base[i]+p[k]);let d='';pts.forEach((p,i)=>{const xa=X(p.t),xb=i+1<pts.length?X(pts[i+1].t):X(x1);d+=(i?'L':'M')+xa+' '+Y(top[i])+'L'+xb+' '+Y(top[i])});for(let i=pts.length-1;i>=0;i--){const xa=X(pts[i].t),xb=i+1<pts.length?X(pts[i+1].t):X(x1);d+='L'+xb+' '+Y(base[i])+'L'+xa+' '+Y(base[i])}
+   svg.append(el('path',{d:d+'Z',fill:c,'fill-opacity':.85,stroke:'#242424','stroke-width':1}));base=top}
+  svg.append(el('line',{x1:m.l,x2:m.l+iw,y1:m.t+ih,y2:m.t+ih,stroke:'#666'}));
+  const cross=el('line',{y1:m.t,y2:m.t+ih,stroke:'#ddd','stroke-width':1,opacity:0});svg.append(cross);
+  const hit=el('rect',{x:m.l,y:m.t,width:iw,height:ih,fill:'transparent'});svg.append(hit);
+  hit.addEventListener('mousemove',ev=>{const r=svg.getBoundingClientRect(),t=x0+(ev.clientX-r.left-m.l)/iw*(x1-x0);let i=pts.findIndex(p=>p.t>t)-1;if(i<0)i=t<pts[0].t?0:pts.length-1;const p=pts[i];cross.setAttribute('x1',X(p.t));cross.setAttribute('x2',X(p.t));cross.setAttribute('opacity',.6);
+   tip.innerHTML=`<b>${fmt(p.t,{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} · ${locSum(p).toLocaleString('en-US')} 行</b>${p.pr?'#'+p.pr+' の統合':'コミット '+p.sha}<small>${G.map(([k,l])=>l+' '+p[k].toLocaleString('en-US')).join('<br>')}</small>`;tip.style.display='block';const x=Math.min(ev.clientX+14,innerWidth-tip.offsetWidth-8);tip.style.left=x+'px';tip.style.top=(ev.clientY+16)+'px'});
+  hit.addEventListener('mouseleave',()=>{tip.style.display='none';cross.setAttribute('opacity',0)});
+  plot.replaceChildren(svg)}
+ draw();new ResizeObserver(()=>draw()).observe(plot)}
+
+{const n=D.mix.reduce((s,m)=>s+m.count,0);$('#mix-n').textContent=`${D.stats.classified_steers} 件のうち、分類できた ${n} 件`;
+ $('#range-note').textContent=fmt(D.range[0],{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+'〜'+fmt(D.range[1],{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}
+</script></html>
